@@ -1,0 +1,150 @@
+<div></div>
+<div class="nbw-blog-start"> #include <windows.h></div>
+<div class="bct fc05 fc11 nbw-blog ztag js-fs2">
+#include "resource.h"<span style="color:#339966;">//资源已丢失,请自行补充</span>
+#include <string.h>
+#define MAXTEXT 100
+#define ID_EDITUP 2
+LRESULT CALLBACK WndProc (HWND,UINT,WPARAM,LPARAM);
+int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE h,PSTR szCmdLine,int iCmdShow)
+{
+WNDCLASS wndclass;
+MSG msg;
+HWND hwnd;
+TCHAR szBuffer[]=TEXT("TTF");
+HACCEL hAccel;
+<span style="color:#008000;font-family:微软雅黑;">//键盘加速键的句柄</span>
+wndclass.style = CS_HREDRAW ' CS_VREDRAW;
+wndclass.hIcon = LoadIcon(NULL,IDI_APPLICATION);
+wndclass.lpszMenuName = NULL;
+wndclass.lpszClassName = szBuffer;
+wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+wndclass.cbClsExtra = 0;
+wndclass.cbWndExtra = 0;
+wndclass.hInstance = hInstance;
+wndclass.lpfnWndProc = WndProc;
+wndclass.hCursor = LoadCursor(NULL,IDC_ARROW);
+if(!RegisterClass(&wndclass))
+{
+MessageBox(NULL,TEXT("加载类出错"),TEXT("提示"),MB_OK);
+return 0;
+}
+hwnd=CreateWindow(szBuffer,TEXT("剪贴板+键盘加速表的简单实现"),WS_OVERLAPPEDWINDOW,
+CW_USEDEFAULT,CW_USEDEFAULT,800,120,
+NULL,LoadMenu(hInstance,TEXT("MENU")),NULL,NULL);
+ShowWindow(hwnd,iCmdShow);
+UpdateWindow(hwnd);
+hAccel = LoadAccelerators(hInstance,TEXT("ACC"));
+<span style="color:#008000;font-family:微软雅黑;">//ACC是键盘加速表的资源名称</span>
+while(GetMessage(&msg,NULL,0,0))
+{
+if(!TranslateAccelerator(hwnd,hAccel,&msg))
+<span style="color:#008000;font-family:微软雅黑;">  /*  TranslateAccelerator函数确定保存在msg消息结构中的消息是否是键盘消息.
+如果是,该函数在加速键表中寻找句柄为hAccel的匹配值
+如果找到匹配值他会调用句柄为hwnd的窗体过程.
+如果键盘加速键ID对应系统菜单的一个菜单项
+则相应消息为WM_syscommand,否则消息是WM_COMMAND;*/</span>
+{
+TranslateMessage(&msg);
+DispatchMessage(&msg);
+}
+}
+return msg.wParam;
+}
+LRESULT CALLBACK WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam)
+{
+static HWND hwndedit;
+static TCHAR szChar[MAXTEXT],szCharNew[MAXTEXT];
+static PTSTR pstring;
+static HANDLE hGlobal;
+int iSubMenuPasteState;
+PTSTR pGlobal;
+switch(message)
+{
+case WM_CREATE:
+hwndedit = CreateWindow(TEXT("edit"),NULL,WS_CHILD ' WS_VISIBLE'WS_BORDER'ES_LEFT,0,0,0,0,hwnd,(HMENU)ID_EDITUP,((LPCREATESTRUCT)lParam)->hInstance,NULL);
+return 0;
+case WM_SIZE:
+MoveWindow(hwndedit,50,HIWORD(GetDialogBaseUnits())+5,700,HIWORD(GetDialogBaseUnits())+5,TRUE);
+return 0;
+case WM_INITMENUPOPUP:
+EnableMenuItem((HMENU) wParam,ID_40006,IsClipboardFormatAvailable(CF_TEXT)?MF_ENABLED:MF_GRAYED);
+<span style="color:#008000;font-family:微软雅黑;">  //检测"复制"菜单是否可用</span>
+iSubMenuPasteState = SendMessage(hwndedit,EM_GETSEL,0,0);
+if(LOWORD(iSubMenuPasteState)==HIWORD(iSubMenuPasteState))
+iSubMenuPasteState = MF_GRAYED;
+else
+iSubMenuPasteState = MF_ENABLED;
+<span style="color:#008000;font-family:微软雅黑;">  //假设选择的是abcd,那么iSubMenuPasteState==0x00040000;
+//假设选择的是a,那么iSubMenuPasteState==0x00000000;</span>
+EnableMenuItem((HMENU) wParam,ID_40005,iSubMenuPasteState);
+return 0;
+case WM_COMMAND:
+if(LOWORD(wParam)==ID_EDITUP&&HIWORD(wParam)==EN_UPDATE)
+GetWindowText(hwndedit,szChar,MAXTEXT);
+<span style="color:#008000;font-family:微软雅黑;">  //从编辑框获取TEXT</span>
+switch(LOWORD(wParam))
+{
+case ID_40005: <span style="color:#008000;font-family:微软雅黑;">//复制的菜单资源ID值</span>
+hGlobal = GlobalAlloc (GMEM_MOVEABLE'GMEM_ZEROINIT'GMEM_SHARE,
+(lstrlen (pstring) + 1 ) * sizeof (TCHAR));
+<span style="color:#008000;font-family:微软雅黑;">//分配内存,失败返回NULL</span>
+pGlobal = GlobalLock(hGlobal);
+<span style="color:#008000;font-family:微软雅黑;">//锁定内存块没返回内存块的指针</span>
+lstrcpy(pGlobal,pstring);
+<span style="color:#008000;font-family:微软雅黑;">//复制文本框内容到全局内存块</span>
+GlobalUnlock(hGlobal);
+<span style="color:#008000;font-family:微软雅黑;"> //解锁剪贴板
+//现在有了一个全局内存句柄,他指定了一块包含以NULL为终止符的文本的内存块.</span>
+OpenClipboard(hwnd);
+EmptyClipboard();
+<span style="color:#008000;font-family:微软雅黑;">//要把这个内存块传入剪贴板,应打开剪贴板并清空它</span>
+SetClipboardData(CF_TEXT,hGlobal);
+CloseClipboard();
+<span style="color:#008000;font-family:微软雅黑;">//通过CF_TEXT标识符.把内存句柄传给剪贴板,并且关闭剪贴板</span>
+return 0;
+case ID_40006: <span style="color:#008000;font-family:微软雅黑;">//粘贴的菜单资源ID值</span>
+OpenClipboard(hwnd);
+<span style="color:#008000;font-family:微软雅黑;">//打开剪贴板</span>
+if(hGlobal = GetClipboardData(CF_TEXT))
+{
+<span style="color:#008000;font-family:微软雅黑;">//取得指向文本的全局内存块的句柄
+//如果剪贴板的数据没有CF_TEXT格式的,此句柄为NULL
+//从GetClipbpardData得到的句柄不属于你的程序,属于剪贴板.
+//所以只在GetClipboardDatahe和CloseClipboard调用之间有效
+//如果想继续访问数据,应该复制内存块</span>
+if(pstring)
+{
+free(pstring);
+pstring = NULL;
+}
+pstring = malloc(GlobalSize(hGlobal));
+pGlobal = GlobalLock(hGlobal);
+<span style="color:#008000;font-family:微软雅黑;">//锁定句柄,得到一个剪贴板数据块的指针</span>
+> lstrcpy(pstring,pGlobal);
+> <span style="color:#008000;font-family:微软雅黑;">//复制数据</span>
+> GlobalUnlock(hGlobal);
+> }
+> CloseClipboard();
+> <span style="color:#008000;font-family:微软雅黑;">//解锁内存块之后关闭剪贴板:
+> </span>   //SetWindowText(hwndedit,())
+lstrcpy(szChar,pstring);
+GetWindowText(hwndedit,szCharNew,MAXTEXT);
+lstrcat(szCharNew,szChar);
+<span style="color:#008000;font-family:微软雅黑;">//合并剪贴板的内容和编辑框的内容</span>
+SetWindowText(hwndedit,szCharNew);
+SendMessage(hwndedit,EM_SETSEL,lstrlen(szCharNew),lstrlen(szCharNew));
+<span style="color:#008000;font-family:微软雅黑;">//移动光标至最后</span>
+return 0;
+}
+pstring = malloc ((lstrlen(szChar)+1)*sizeof (TCHAR));
+lstrcpy(pstring,szChar);
+<span style="font-family:微软雅黑;">//从TCHAR到PTSTR
+</span>  return 0;
+case WM_DESTROY:
+PostQuitMessage(0);
+return 0;
+}
+return DefWindowProc(hwnd,message,wParam,lParam);
+}
+</div>]]>

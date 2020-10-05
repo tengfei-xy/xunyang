@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link type="text/css" rel="stylesheet" charset="UTF-8" href="/web/static/default.css">
+        <link type="text/css" rel="stylesheet" charset="UTF-8" href="/web/static/docs.css">
+    </head>
+    <body>
+        <header class="site-header">
+            <div class ="site-titles">
+                <div class="site-name"><a href="/">{{.Name}}</a></div>
+                <div class="site-description">{{.Description}}</div>
+            </div>
+            <div class="site-menu-all">
+                <ul class="site-menu">
+                    {{.Menu}}
+                </ul>
+            </div>
+        </header>
+        <div id="site-docs" style="display: {{.DocsShow}};">
+            {{.Docs}}
+        </div>
+        <div id="site-mdlist" style="display: {{.MDListShow}};">
+            {{.MDList}}
+        </div>
+        <div id="site-index" style="display: {{.IndexShow}};">
+            {{.Index}}
+        </div>
+    </body>
+</html>
