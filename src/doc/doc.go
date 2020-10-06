@@ -40,7 +40,9 @@ func (d *Doc) GetMenu(currentDir string) {
 	}
 	for _, i := range f {
 		cate := i.Name()
-		if cate != ".git" && i.IsDir() {
+
+		// 只允许非.开头的文件夹
+		if cate[0:1] != "." && i.IsDir() {
 			d.Menu += template.HTML(fmt.Sprintf(`<li class="site-menu-sub"><a href=%s>%s</li>`, cate+"/", cate))
 		}
 	}

@@ -19,7 +19,7 @@ func xyInit() {
 func xyWebRun() {
 	http.HandleFunc("/", xyWebIndex)
 	go http.ListenAndServe("0.0.0.0:80", nil)
-	log.Println(http.ListenAndServeTLS("0.0.0.0:443", "ssl/xunyang.site.crt", "ssl/xunyang.site.key", nil))
+	log.Println(http.ListenAndServeTLS("0.0.0.0:443", "ssl/ssl.crt", "ssl/ssl.key", nil))
 
 }
 func main() {

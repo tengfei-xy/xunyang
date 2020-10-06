@@ -3,5 +3,4 @@
 /ssl/*.*
 /src/gopkg.in
 /src/github.com
-xunyang
 nohup.out
