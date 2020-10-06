@@ -14,12 +14,12 @@ import (
 )
 
 func xyInit() {
-
+	log.Println("start")
 }
 func xyWebRun() {
 	http.HandleFunc("/", xyWebIndex)
 	go http.ListenAndServe("0.0.0.0:80", nil)
-	http.ListenAndServeTLS("0.0.0.0:443", "ssl/xunyang.site.crt", "ssl/xunyang.site.key", nil)
+	log.Println(http.ListenAndServeTLS("0.0.0.0:443", "ssl/xunyang.site.crt", "ssl/xunyang.site.key", nil))
 
 }
 func main() {
