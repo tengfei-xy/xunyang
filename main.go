@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"fmt"
 
 	// my src
 	"doc"
@@ -18,8 +19,7 @@ func xyInit() {
 }
 func xyWebRun() {
 	http.HandleFunc("/", xyWebIndex)
-	go http.ListenAndServe("0.0.0.0:80", nil)
-	log.Println(http.ListenAndServeTLS("0.0.0.0:443", "ssl/ssl.crt", "ssl/ssl.key", nil))
+	fmt.Print(http.ListenAndServe("127.0.0.1:8000", nil))
 
 }
 func main() {
